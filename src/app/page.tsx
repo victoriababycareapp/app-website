@@ -1,9 +1,7 @@
 import Image from "next/image";
 
 /* Pre-launch: store URLs not live yet. Swap these in when the apps publish,
-   then wire device-aware routing (iOS→App Store, Android→Play, desktop→both+QR).
-   TODO(seo): add JSON-LD (MobileApplication / Organization / FAQPage) in the SEO
-   pass via a hook-safe structured-data approach. */
+   then wire device-aware routing (iOS→App Store, Android→Play, desktop→both+QR). */
 const APP_STORE_URL = "#get";
 const PLAY_STORE_URL = "#get";
 
@@ -41,9 +39,41 @@ const FAQ = [
   },
 ];
 
+// JSON-LD structured data. Rendered as <script> text (not via a raw-HTML
+// injection prop); all string values avoid & / < / > so React's text escaping
+// can't corrupt the JSON.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "Victoria Baby Care",
+      url: "https://victoriababycare.com",
+      logo: "https://victoriababycare.com/luna.png",
+    },
+    {
+      "@type": "MobileApplication",
+      name: "Victoria Baby Care",
+      operatingSystem: "iOS, Android",
+      applicationCategory: "HealthApplication",
+      description:
+        "A calm baby tracker for feeds, sleep, diapers, growth and milestones, with a warm Night-Feed mode and 20-language support.",
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: FAQ.map((f) => ({
+        "@type": "Question",
+        name: f.q,
+        acceptedAnswer: { "@type": "Answer", text: f.a },
+      })),
+    },
+  ],
+};
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-wall text-ink">
+      <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       {/* Header */}
       <header className="sticky top-0 z-20 border-b border-cardborder/70 bg-wall/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
