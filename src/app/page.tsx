@@ -8,7 +8,7 @@ export const revalidate = 300;
 /* Pre-launch: store URLs not live yet. Swap these in when the apps publish,
    then wire device-aware routing (iOS→App Store, Android→Play, desktop→both+QR). */
 const APP_STORE_URL =
-  "https://apps.apple.com/fr/app/victoria-baby-care/id6753694974?l=en-GB";
+  "https://apps.apple.com/app/id6753694974";
 const PLAY_STORE_URL = "#get"; // Android not published yet
 
 const PILLARS = [
@@ -63,7 +63,7 @@ const jsonLd = {
       operatingSystem: "iOS, Android",
       applicationCategory: "HealthApplication",
       installUrl:
-        "https://apps.apple.com/fr/app/victoria-baby-care/id6753694974?l=en-GB",
+        "https://apps.apple.com/app/id6753694974",
       description:
         "A calm baby tracker for feeds, sleep, diapers, growth and milestones, with a warm Night-Feed mode and 20-language support.",
     },
