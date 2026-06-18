@@ -1,5 +1,10 @@
 import Image from "next/image";
 
+// Revalidate the static landing every 5 minutes. App Hosting serves SSG pages
+// with a ~1-year CDN s-maxage by default, which pins content between deploys;
+// ISR keeps it fast but lets updates appear promptly.
+export const revalidate = 300;
+
 /* Pre-launch: store URLs not live yet. Swap these in when the apps publish,
    then wire device-aware routing (iOS→App Store, Android→Play, desktop→both+QR). */
 const APP_STORE_URL = "#get";
