@@ -18,6 +18,8 @@ const SITE_URL = "https://victoriababycare.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  // Apex is canonical — keeps www + apex from splitting SEO (both serve the site).
+  alternates: { canonical: "/" },
   title: "Victoria Baby Care — a calm companion for feeds, sleep & milestones",
   description:
     "The gentle baby tracker that does less for tired parents. Log feeds, sleep, diapers, growth and milestones, with a warm Night-Feed mode for 3am. In 20 languages.",
