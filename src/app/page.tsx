@@ -157,7 +157,7 @@ export default function Home() {
       {/* Brand story */}
       <section className="bg-night py-20 text-cream">
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-8 px-5 text-center md:flex-row md:text-left">
-          <Image src="/luna-256.png" alt="Luna" width={120} height={120} className="shrink-0" />
+          <Image src="/luna-256.png" alt="Luna" width={120} height={120} className="luna-rock shrink-0" />
           <div>
             <h2 className="text-3xl text-cream">Meet Luna</h2>
             <p className="mt-4 text-lg leading-relaxed text-[#d8cbb8]">
