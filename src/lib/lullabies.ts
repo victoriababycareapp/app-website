@@ -23,6 +23,8 @@ export interface Lullaby {
   durationSec?: number;
   /** BCP-47 language tag, or "instrumental". */
   language?: string;
+  /** Free-form tags (e.g. sleep, calm) for filtering/search. */
+  tags?: string[];
   /** Sort order in the app's player. */
   order: number;
   /** The app shows a track only when this is true. Unpublish = set false. */

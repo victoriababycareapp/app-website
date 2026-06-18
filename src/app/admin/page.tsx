@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import {
   GoogleAuthProvider,
   onAuthStateChanged,
@@ -31,13 +32,12 @@ import {
   type LullabyType,
 } from "../../lib/lullabies";
 
-/* ── Admin lullaby studio (single account, gated by the `admin:true` claim) ──
-   Security is enforced by Firestore + Storage rules (only the admin claim can
-   write; the app reads published==true). This UI is the convenient front-end. */
+/* ── Lullaby Studio (single admin, gated by the `admin:true` claim) ──────────
+   Security is enforced by Firestore + Storage rules; this is the front-end. */
 
 export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null); // null = resolving
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
@@ -53,23 +53,22 @@ export default function AdminPage() {
     });
   }, []);
 
-  if (!authReady) {
-    return <Centered>Loading…</Centered>;
-  }
+  if (!authReady) return <Centered>Loading…</Centered>;
 
   if (!user) {
     return (
       <Centered>
-        <div className="w-full max-w-sm rounded-[20px] border border-cardborder bg-cream p-8 text-center">
-          <h1 className="text-2xl">Lullaby studio</h1>
-          <p className="mt-2 text-secondary">Sign in to manage the app&rsquo;s music.</p>
+        <Card>
+          <Moon size={48} />
+          <h1 className="mt-4 text-2xl">Lullaby studio</h1>
+          <p className="mt-2 text-secondary">Sign in to manage the app’s music.</p>
           <button
             onClick={() => signInWithPopup(auth, new GoogleAuthProvider())}
             className="mt-6 w-full rounded-full bg-clay px-6 py-3 font-semibold text-cream transition-colors hover:bg-clay-deep"
           >
             Continue with Google
           </button>
-        </div>
+        </Card>
       </Centered>
     );
   }
@@ -77,18 +76,16 @@ export default function AdminPage() {
   if (isAdmin === false) {
     return (
       <Centered>
-        <div className="w-full max-w-sm rounded-[20px] border border-cardborder bg-cream p-8 text-center">
+        <Card>
           <h1 className="text-2xl">Not authorized</h1>
-          <p className="mt-2 text-secondary">
-            {user.email} isn&rsquo;t an admin on this studio.
-          </p>
+          <p className="mt-2 text-secondary">{user.email} isn’t an admin on this studio.</p>
           <button
             onClick={() => signOut(auth)}
             className="mt-6 rounded-full border border-mushroom px-6 py-2.5 font-semibold text-ink hover:bg-plaster"
           >
             Sign out
           </button>
-        </div>
+        </Card>
       </Centered>
     );
   }
@@ -96,29 +93,18 @@ export default function AdminPage() {
   return <Studio user={user} />;
 }
 
-function Centered({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-wall px-5">
-      {children}
-    </div>
-  );
-}
-
-/* ── The studio ──────────────────────────────────────────────────────────── */
+/* ── Studio shell: sidebar · upload · live-in-app ───────────────────────────*/
 function Studio({ user }: { user: User }) {
   const [items, setItems] = useState<Lullaby[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [nowPlaying, setNowPlaying] = useState<Lullaby | null>(null);
 
   useEffect(() => {
     const q = query(collection(db, LULLABIES_COLLECTION), orderBy("order", "asc"));
     return onSnapshot(
       q,
-      (snap) => {
-        setItems(
-          snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Lullaby, "id">) })),
-        );
-        setLoadError(null);
-      },
+      (snap) =>
+        setItems(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Lullaby, "id">) }))),
       (err) => setLoadError(err.message),
     );
   }, []);
@@ -130,112 +116,106 @@ function Studio({ user }: { user: User }) {
 
   return (
     <div className="min-h-screen bg-wall text-ink">
-      <header className="border-b border-cardborder bg-wall/90 px-5 py-3 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <h1 className="font-serif text-xl font-semibold">Lullaby studio</h1>
-          <div className="flex items-center gap-3 text-sm text-secondary">
-            <span>{user.email}</span>
-            <button
-              onClick={() => signOut(auth)}
-              className="rounded-full border border-mushroom px-3 py-1.5 font-semibold text-ink hover:bg-plaster"
-            >
-              Sign out
-            </button>
+      <div className="mx-auto flex min-h-screen max-w-7xl gap-6 p-5">
+        {/* Sidebar */}
+        <aside className="hidden w-56 shrink-0 flex-col gap-1 md:flex">
+          <div className="mb-6 flex items-center gap-2.5 px-2">
+            <Moon size={32} />
+            <span className="font-serif text-xl font-semibold">Studio</span>
           </div>
-        </div>
-      </header>
+          <SideItem active icon="upload">Upload</SideItem>
+          <SideItem icon="music">Lullabies</SideItem>
+          <SideItem icon="grid">Live in app</SideItem>
+          <button
+            onClick={() => signOut(auth)}
+            className="mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-secondary transition-colors hover:bg-plaster"
+          >
+            <span className="text-lg">↺</span> Sign out
+          </button>
+          <p className="mt-auto px-2 text-xs text-muted">{user.email}</p>
+        </aside>
 
-      <main className="mx-auto max-w-4xl space-y-8 px-5 py-8">
-        <UploadCard nextOrder={nextOrder} />
-        {loadError && (
-          <p className="rounded-xl border border-amber/40 bg-amber/10 p-3 text-sm text-secondary">
-            Couldn&rsquo;t load the catalog: {loadError}. (If this says permission denied,
-            the Firestore rules for <code>/lullabies</code> aren&rsquo;t deployed yet.)
-          </p>
-        )}
-        <CatalogList items={items} />
-      </main>
+        {/* Upload */}
+        <main className="min-w-0 flex-1">
+          <UploadPanel nextOrder={nextOrder} />
+          {loadError && (
+            <p className="mt-4 rounded-xl border border-amber/40 bg-amber/10 p-3 text-sm text-secondary">
+              Couldn’t load the catalog: {loadError}
+            </p>
+          )}
+        </main>
+
+        {/* Live in the app */}
+        <LivePanel items={items} nowPlaying={nowPlaying} setNowPlaying={setNowPlaying} />
+      </div>
     </div>
   );
 }
 
-/* ── Upload + metadata ───────────────────────────────────────────────────── */
-function UploadCard({ nextOrder }: { nextOrder: number }) {
+/* ── Upload panel ───────────────────────────────────────────────────────────*/
+function UploadPanel({ nextOrder }: { nextOrder: number }) {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [durationSec, setDurationSec] = useState<number | undefined>();
+  const [artwork, setArtwork] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
+  const [tags, setTags] = useState("");
   const [type, setType] = useState<LullabyType>("lullaby");
-  const [language, setLanguage] = useState("instrumental");
   const [dragOver, setDragOver] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const artInput = useRef<HTMLInputElement>(null);
 
-  const pickFile = useCallback((f: File | null) => {
-    setError(null);
-    if (!f) return;
-    if (!f.type.startsWith("audio/")) {
-      setError("Please choose an audio file.");
-      return;
-    }
-    setFile(f);
-    const url = URL.createObjectURL(f);
-    setPreviewUrl(url);
-    if (!title) setTitle(f.name.replace(/\.[^.]+$/, ""));
-    const probe = new Audio(url);
-    probe.addEventListener("loadedmetadata", () =>
-      setDurationSec(Math.round(probe.duration)),
-    );
-  }, [title]);
+  const pickFile = useCallback(
+    (f: File | null) => {
+      setError(null);
+      if (!f) return;
+      if (!f.type.startsWith("audio/")) return setError("Please choose an audio file (MP3 / M4A).");
+      setFile(f);
+      const url = URL.createObjectURL(f);
+      setPreviewUrl(url);
+      if (!title) setTitle(f.name.replace(/\.[^.]+$/, ""));
+      const probe = new Audio(url);
+      probe.addEventListener("loadedmetadata", () => setDurationSec(Math.round(probe.duration)));
+    },
+    [title],
+  );
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
 
   function reset() {
-    setFile(null);
-    setPreviewUrl(null);
-    setDurationSec(undefined);
-    setTitle("");
-    setArtist("");
-    setType("lullaby");
-    setLanguage("instrumental");
-    setProgress(null);
+    setFile(null); setPreviewUrl(null); setDurationSec(undefined); setArtwork(null);
+    setTitle(""); setArtist(""); setTags(""); setType("lullaby"); setProgress(null);
+  }
+
+  async function uploadTo(path: string, f: File): Promise<string> {
+    const task = uploadBytesResumable(storageRef(storage, path), f, { contentType: f.type });
+    await new Promise<void>((res, rej) =>
+      task.on("state_changed",
+        (s) => setProgress(Math.round((s.bytesTransferred / s.totalBytes) * 100)),
+        rej, () => res()),
+    );
+    return getDownloadURL(task.snapshot.ref);
   }
 
   async function publish() {
-    if (!file || !title.trim()) {
-      setError("A file and a title are required.");
-      return;
-    }
-    setError(null);
-    setProgress(0);
+    if (!file || !title.trim()) return setError("A file and a title are required.");
+    setError(null); setProgress(0);
     try {
       const id = crypto.randomUUID();
-      const path = `lullabies/audio/${id}/${file.name}`;
-      const task = uploadBytesResumable(storageRef(storage, path), file, {
-        contentType: file.type,
-      });
-      await new Promise<void>((resolve, reject) => {
-        task.on(
-          "state_changed",
-          (s) => setProgress(Math.round((s.bytesTransferred / s.totalBytes) * 100)),
-          reject,
-          () => resolve(),
-        );
-      });
-      const audioUrl = await getDownloadURL(task.snapshot.ref);
+      const audioUrl = await uploadTo(`lullabies/audio/${id}/${file.name}`, file);
+      let artworkUrl: string | null = null;
+      if (artwork) artworkUrl = await uploadTo(`lullabies/artwork/${id}/${artwork.name}`, artwork);
       await setDoc(doc(db, LULLABIES_COLLECTION, id), {
         title: title.trim(),
-        artist: artist.trim() || null,
+        artist: artist.trim() || "Victoria Baby Care",
         type,
         audioUrl,
+        artworkUrl,
         durationSec: durationSec ?? null,
-        language: language.trim() || null,
+        tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
         order: nextOrder,
         published: true,
         createdAt: serverTimestamp(),
@@ -249,40 +229,51 @@ function UploadCard({ nextOrder }: { nextOrder: number }) {
   }
 
   return (
-    <section className="rounded-[20px] border border-cardborder bg-cream p-6">
-      <h2 className="text-xl">Add a track</h2>
+    <section
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => { e.preventDefault(); setDragOver(false); pickFile(e.dataTransfer.files?.[0] ?? null); }}
+      className={`rounded-[24px] border-2 border-dashed p-6 transition-colors ${
+        dragOver ? "border-clay bg-clay/5" : "border-mushroom bg-cream/60"
+      }`}
+    >
+      <div onClick={() => fileInput.current?.click()} className="cursor-pointer pb-4 pt-6 text-center">
+        <input ref={fileInput} type="file" accept="audio/*" className="hidden"
+          onChange={(e) => pickFile(e.target.files?.[0] ?? null)} />
+        <h2 className="text-2xl">{file ? file.name : "Drop a lullaby here"}</h2>
+        <p className="mt-1 text-sm font-semibold text-secondary">MP3 / M4A · drag &amp; drop</p>
+      </div>
 
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(false);
-          pickFile(e.dataTransfer.files?.[0] ?? null);
-        }}
-        onClick={() => inputRef.current?.click()}
-        className={`mt-4 cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-colors ${
-          dragOver ? "border-clay bg-clay/5" : "border-mushroom bg-wall"
-        }`}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="audio/*"
-          className="hidden"
-          onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
-        />
-        {file ? (
-          <p className="font-semibold text-ink">
-            {file.name}
-            {durationSec ? ` · ${formatDur(durationSec)}` : ""}
-          </p>
-        ) : (
-          <p className="text-secondary">Drop an audio file here, or click to choose.</p>
-        )}
+      <div className="space-y-3">
+        <FieldRow>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls}
+            placeholder="Title — “Moonlight Lullaby”" />
+        </FieldRow>
+        <FieldRow>
+          <button onClick={() => artInput.current?.click()} className="w-full text-left text-ink/80">
+            {artwork ? `Artwork — ${artwork.name} ✓` : "Artwork — add cover (optional)"}
+          </button>
+          <input ref={artInput} type="file" accept="image/*" className="hidden"
+            onChange={(e) => setArtwork(e.target.files?.[0] ?? null)} />
+        </FieldRow>
+        <FieldRow>
+          <div className="flex w-full items-center gap-3">
+            <input value={tags} onChange={(e) => setTags(e.target.value)}
+              className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-mushroom"
+              placeholder="Tags — sleep, calm" />
+            <span className="text-mushroom">·</span>
+            <select value={type} onChange={(e) => setType(e.target.value as LullabyType)}
+              className="bg-transparent text-ink outline-none">
+              <option value="lullaby">Type — Lullaby</option>
+              <option value="noise">Type — Noise</option>
+            </select>
+          </div>
+        </FieldRow>
+        <FieldRow>
+          <span className="text-ink/80">
+            Duration — {durationSec ? fmt(durationSec) : "—"} (auto) · Order — {nextOrder}
+          </span>
+        </FieldRow>
       </div>
 
       {previewUrl && (
@@ -290,140 +281,165 @@ function UploadCard({ nextOrder }: { nextOrder: number }) {
           <track kind="captions" />
         </audio>
       )}
+      {error && <p className="mt-3 text-sm text-clay-deep">{error}</p>}
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <Field label="Title">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className={inputCls}
-            placeholder="Moonlight"
-          />
-        </Field>
-        <Field label="Artist (optional)">
-          <input
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
-            className={inputCls}
-            placeholder="Victoria Baby Care"
-          />
-        </Field>
-        <Field label="Type">
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as LullabyType)}
-            className={inputCls}
-          >
-            <option value="lullaby">Lullaby</option>
-            <option value="noise">Noise (white/pink/brown)</option>
-          </select>
-        </Field>
-        <Field label="Language">
-          <input
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className={inputCls}
-            placeholder="instrumental, en, fr…"
-          />
-        </Field>
-      </div>
-
-      {error && <p className="mt-4 text-sm text-clay-deep">{error}</p>}
+      {progress !== null && (
+        <div className="mt-5">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-mushroom/30">
+            <div className="h-full rounded-full bg-sage transition-all" style={{ width: `${progress}%` }} />
+          </div>
+          <p className="mt-2 text-sm text-secondary">Uploading… {progress}% · preview before publish</p>
+        </div>
+      )}
 
       <div className="mt-6 flex items-center gap-4">
-        <button
-          onClick={publish}
-          disabled={progress !== null || !file}
-          className="rounded-full bg-clay px-6 py-3 font-semibold text-cream transition-colors hover:bg-clay-deep disabled:opacity-50"
-        >
-          {progress !== null ? `Uploading… ${progress}%` : "Publish to the app"}
+        <button onClick={publish} disabled={progress !== null || !file}
+          className="rounded-full bg-clay px-6 py-3 font-semibold text-cream transition-colors hover:bg-clay-deep disabled:opacity-50">
+          Publish to the app
         </button>
         {file && progress === null && (
-          <button onClick={reset} className="text-sm font-semibold text-secondary hover:text-ink">
-            Clear
-          </button>
+          <button onClick={reset} className="text-sm font-semibold text-secondary hover:text-ink">Clear</button>
         )}
       </div>
     </section>
   );
 }
 
-/* ── Live catalog ────────────────────────────────────────────────────────── */
-function CatalogList({ items }: { items: Lullaby[] }) {
+/* ── Live-in-app panel + mini player ────────────────────────────────────────*/
+function LivePanel({
+  items, nowPlaying, setNowPlaying,
+}: {
+  items: Lullaby[];
+  nowPlaying: Lullaby | null;
+  setNowPlaying: (l: Lullaby | null) => void;
+}) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [pos, setPos] = useState(0);
+
+  function playTrack(l: Lullaby) {
+    setNowPlaying(l);
+    setTimeout(() => { audioRef.current?.play(); }, 0);
+  }
+  function togglePlay() {
+    const a = audioRef.current;
+    if (!a) return;
+    if (a.paused) a.play(); else a.pause();
+  }
   async function togglePublished(l: Lullaby) {
-    await updateDoc(doc(db, LULLABIES_COLLECTION, l.id), {
-      published: !l.published,
-      updatedAt: serverTimestamp(),
-    });
+    await updateDoc(doc(db, LULLABIES_COLLECTION, l.id), { published: !l.published, updatedAt: serverTimestamp() });
   }
   async function remove(l: Lullaby) {
+    if (nowPlaying?.id === l.id) setNowPlaying(null);
     await deleteDoc(doc(db, LULLABIES_COLLECTION, l.id));
   }
 
-  if (!items.length) {
-    return (
-      <section className="rounded-[20px] border border-cardborder bg-cream p-6 text-center text-secondary">
-        No tracks yet. Add your first lullaby above — it appears in the app instantly.
-      </section>
-    );
-  }
-
   return (
-    <section className="space-y-3">
-      <h2 className="text-xl">Live in the app</h2>
-      {items.map((l) => (
-        <div
-          key={l.id}
-          className="flex items-center justify-between gap-4 rounded-2xl border border-cardborder bg-cream p-4"
-        >
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-ink">
-              {l.title}{" "}
-              <span className="text-xs font-normal text-muted">
-                · {l.type}
-                {l.durationSec ? ` · ${formatDur(l.durationSec)}` : ""}
-              </span>
-            </p>
-            {l.artist && <p className="truncate text-sm text-secondary">{l.artist}</p>}
+    <aside className="hidden w-80 shrink-0 flex-col lg:flex">
+      <h2 className="mb-4 text-xl">Live in the app</h2>
+      <div className="flex-1 space-y-3 overflow-y-auto">
+        {items.length === 0 && (
+          <p className="rounded-2xl border border-cardborder bg-cream p-4 text-sm text-secondary">
+            No tracks yet. Upload one — it appears in the app instantly.
+          </p>
+        )}
+        {items.map((l) => (
+          <div key={l.id} className="rounded-2xl border border-cardborder bg-cream p-3">
+            <div className="flex items-center gap-3">
+              <Thumb url={l.artworkUrl} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-ink">{l.title}</p>
+                <p className="truncate text-xs text-muted">
+                  {l.durationSec ? fmt(l.durationSec) : "—"} · {l.published ? "published" : "hidden"}
+                </p>
+              </div>
+              <button onClick={() => playTrack(l)} aria-label={`Play ${l.title}`}
+                className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                  l.published ? "bg-clay text-cream hover:bg-clay-deep" : "bg-mushroom/40 text-secondary"
+                }`}>▶</button>
+            </div>
+            <div className="mt-2 flex gap-3 pl-14 text-xs">
+              <button onClick={() => togglePublished(l)} className="font-semibold text-secondary hover:text-ink">
+                {l.published ? "Hide" : "Publish"}
+              </button>
+              <button onClick={() => remove(l)} className="font-semibold text-clay-deep hover:underline">Delete</button>
+            </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              onClick={() => togglePublished(l)}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                l.published
-                  ? "bg-sage/20 text-sage"
-                  : "border border-mushroom text-secondary"
-              }`}
-            >
-              {l.published ? "Published" : "Hidden"}
+        ))}
+      </div>
+
+      {/* Dark mini-player */}
+      {nowPlaying && (
+        <div className="mt-4 rounded-2xl bg-night p-3 text-cream">
+          <div className="flex items-center gap-3">
+            <button onClick={togglePlay}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-amber text-night">
+              {playing ? "❚❚" : "▶"}
             </button>
-            <button
-              onClick={() => remove(l)}
-              className="rounded-full border border-mushroom px-3 py-1.5 text-xs font-semibold text-clay-deep hover:bg-plaster"
-            >
-              Delete
-            </button>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{nowPlaying.title}</p>
+              <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-cream/20">
+                <div className="h-full rounded-full bg-amber"
+                  style={{ width: nowPlaying.durationSec ? `${(pos / nowPlaying.durationSec) * 100}%` : "0%" }} />
+              </div>
+            </div>
+            <span className="text-xs tabular-nums text-cream/70">{fmt(Math.floor(pos))}</span>
           </div>
+          <audio
+            ref={audioRef}
+            src={nowPlaying.audioUrl}
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+            onTimeUpdate={(e) => setPos(e.currentTarget.currentTime)}
+            onEnded={() => setPlaying(false)}
+          >
+            <track kind="captions" />
+          </audio>
         </div>
-      ))}
-    </section>
+      )}
+    </aside>
   );
 }
 
-/* ── small helpers ───────────────────────────────────────────────────────── */
-const inputCls =
-  "w-full rounded-xl border border-mushroom bg-wall px-3 py-2.5 text-ink outline-none focus:border-clay";
+/* ── small bits ─────────────────────────────────────────────────────────────*/
+const inputCls = "w-full bg-transparent text-ink outline-none placeholder:text-mushroom";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function FieldRow({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-xl border border-cardborder bg-cream px-4 py-3 text-sm">{children}</div>;
+}
+
+function SideItem({
+  children, active, icon,
+}: { children: React.ReactNode; active?: boolean; icon: "upload" | "music" | "grid" }) {
+  const glyph = icon === "upload" ? "＋" : icon === "music" ? "♪" : "▦";
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-sm font-semibold text-secondary">{label}</span>
-      {children}
-    </label>
+    <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${
+      active ? "bg-clay font-semibold text-cream" : "text-secondary"
+    }`}>
+      <span className="text-lg">{glyph}</span> {children}
+    </div>
   );
 }
 
-function formatDur(sec: number): string {
+function Thumb({ url }: { url?: string }) {
+  if (url) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={url} alt="" className="h-11 w-11 rounded-lg object-cover" />;
+  }
+  return <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-mushroom/30 text-clay">♪</div>;
+}
+
+function Centered({ children }: { children: React.ReactNode }) {
+  return <div className="flex min-h-screen items-center justify-center bg-wall px-5">{children}</div>;
+}
+function Card({ children }: { children: React.ReactNode }) {
+  return <div className="w-full max-w-sm rounded-[20px] border border-cardborder bg-cream p-8 text-center">{children}</div>;
+}
+function Moon({ size }: { size: number }) {
+  return <Image src="/luna-256.png" alt="Victoria Baby Care" width={size} height={size} className="rounded-full" />;
+}
+
+function fmt(sec: number): string {
   const m = Math.floor(sec / 60);
   const s = sec % 60;
   return `${m}:${s.toString().padStart(2, "0")}`;
