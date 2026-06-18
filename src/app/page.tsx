@@ -212,6 +212,17 @@ export default function Home() {
           <span className="font-serif text-base text-secondary">Victoria Baby Care</span>
           <span>Made with love for tired, wonderful parents.</span>
         </div>
+        <div className="mx-auto mt-6 max-w-6xl px-5 text-center text-xs text-muted">
+          Designed &amp; built by{" "}
+          <a
+            href="https://siteappdigital.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 transition-colors hover:text-secondary"
+          >
+            SiteApp Digital
+          </a>
+        </div>
       </footer>
     </div>
   );
