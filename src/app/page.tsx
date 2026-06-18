@@ -7,8 +7,9 @@ export const revalidate = 300;
 
 /* Pre-launch: store URLs not live yet. Swap these in when the apps publish,
    then wire device-aware routing (iOS→App Store, Android→Play, desktop→both+QR). */
-const APP_STORE_URL = "#get";
-const PLAY_STORE_URL = "#get";
+const APP_STORE_URL =
+  "https://apps.apple.com/fr/app/victoria-baby-care/id6753694974?l=en-GB";
+const PLAY_STORE_URL = "#get"; // Android not published yet
 
 const PILLARS = [
   {
@@ -61,6 +62,8 @@ const jsonLd = {
       name: "Victoria Baby Care",
       operatingSystem: "iOS, Android",
       applicationCategory: "HealthApplication",
+      installUrl:
+        "https://apps.apple.com/fr/app/victoria-baby-care/id6753694974?l=en-GB",
       description:
         "A calm baby tracker for feeds, sleep, diapers, growth and milestones, with a warm Night-Feed mode and 20-language support.",
     },
@@ -109,7 +112,7 @@ export default function Home() {
             milestones for you, reassures you your baby&rsquo;s okay, and stays warm and kind at 3am.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a href={APP_STORE_URL} aria-label="Download on the App Store">
+            <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" aria-label="Download on the App Store">
               <Image src="/app-store-badge.svg" alt="Download on the App Store" width={144} height={48} unoptimized />
             </a>
             <a href={PLAY_STORE_URL} aria-label="Get it on Google Play">
@@ -117,7 +120,7 @@ export default function Home() {
             </a>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-            <span className="text-muted">Coming soon to the App Store &amp; Google Play.</span>
+            <span className="text-muted">On the App Store now &mdash; Android coming soon.</span>
             <a href="#how" className="font-semibold text-clay hover:text-clay-deep">See how it helps</a>
           </div>
         </div>
@@ -190,10 +193,10 @@ export default function Home() {
           <Image src="/luna-256.png" alt="Victoria Baby Care" width={64} height={64} className="mx-auto" />
           <h2 className="mt-5 text-3xl">A softer place to land</h2>
           <p className="mt-4 text-lg text-secondary">
-            Bring the calm home. Victoria Baby Care is coming soon to iPhone and Android.
+            Bring the calm home. Victoria Baby Care is on iPhone now &mdash; Android coming soon.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <a href={APP_STORE_URL} aria-label="Download on the App Store">
+            <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" aria-label="Download on the App Store">
               <Image src="/app-store-badge.svg" alt="Download on the App Store" width={144} height={48} unoptimized />
             </a>
             <a href={PLAY_STORE_URL} aria-label="Get it on Google Play">
