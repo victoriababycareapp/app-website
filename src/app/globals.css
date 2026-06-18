@@ -44,3 +44,16 @@ h3 {
   letter-spacing: -0.01em;
   color: var(--color-ink);
 }
+
+/* Luna gently rocks up and down, like rocking a baby to sleep. */
+@keyframes luna-rock {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+.luna-rock {
+  animation: luna-rock 5.5s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .luna-rock { animation: none; }
+}

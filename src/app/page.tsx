@@ -119,7 +119,7 @@ export default function Home() {
 
         <div className="flex justify-center">
           <div className="relative flex h-72 w-72 items-center justify-center rounded-full bg-[radial-gradient(circle,_#fbead9_0%,_#f6efe6_70%)] md:h-96 md:w-96">
-            <Image src="/luna.png" alt="Luna, the sleeping moon" width={260} height={260} priority />
+            <Image src="/luna.png" alt="Luna, the sleeping moon" width={260} height={260} priority className="luna-rock" />
           </div>
         </div>
       </section>
