@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/* ── Warm Cocoon design tokens (mirror the Flutter app's AppTokens) ────────── */
+@theme {
+  --color-wall: #f6efe6;       /* page background */
+  --color-plaster: #ede3d6;    /* soft section surface */
+  --color-cream: #fcf5ec;      /* card surface */
+  --color-mushroom: #c7b8ab;   /* muted edges */
+  --color-clay: #c2734f;       /* primary CTA + accent */
+  --color-clay-deep: #a85e3e;  /* hover / pressed */
+  --color-sage: #94a684;       /* gentle secondary */
+  --color-amber: #b9863f;      /* warm highlight */
+  --color-ink: #3a322b;        /* body text */
+  --color-secondary: #6e6357;  /* secondary text */
+  --color-muted: #9c8e7e;      /* hints / footer */
+  --color-night: #1e1b17;      /* night ground */
+  --color-cardborder: #ecdfcd;
+
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-mulish), -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-wall);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}

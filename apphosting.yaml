@@ -1,0 +1,21 @@
+# Firebase App Hosting — runtime config for the Next.js (SSR) site.
+# The backend is created/connected once via `firebase apphosting:backends:create`
+# (or the console) against this repo; App Hosting then builds & serves the Next app.
+# NOTE: classic `firebase deploy --only hosting` is NOT used here (that's static
+# export and can't run the SSR admin studio) — App Hosting is the pipeline.
+
+runConfig:
+  minInstances: 0
+  maxInstances: 2
+  cpu: 1
+  memoryMiB: 512
+
+# Public Firebase web config is safe to expose as NEXT_PUBLIC_* env vars.
+# Server-only secrets (Admin SDK / session-cookie signing) come from Secret Manager:
+#   firebase apphosting:secrets:set <NAME>
+# then referenced here, e.g.:
+# env:
+#   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+#     value: "<web api key>"
+#   - variable: FIREBASE_ADMIN_SA
+#     secret: FIREBASE_ADMIN_SA
