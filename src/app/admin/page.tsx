@@ -162,6 +162,7 @@ function UploadPanel({ nextOrder }: { nextOrder: number }) {
   const [artist, setArtist] = useState("");
   const [tags, setTags] = useState("");
   const [type, setType] = useState<LullabyType>("lullaby");
+  const [language, setLanguage] = useState("instrumental");
   const [dragOver, setDragOver] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -187,7 +188,8 @@ function UploadPanel({ nextOrder }: { nextOrder: number }) {
 
   function reset() {
     setFile(null); setPreviewUrl(null); setDurationSec(undefined); setArtwork(null);
-    setTitle(""); setArtist(""); setTags(""); setType("lullaby"); setProgress(null);
+    setTitle(""); setArtist(""); setTags(""); setType("lullaby");
+    setLanguage("instrumental"); setProgress(null);
   }
 
   async function uploadTo(path: string, f: File): Promise<string> {
@@ -216,6 +218,7 @@ function UploadPanel({ nextOrder }: { nextOrder: number }) {
         artworkUrl,
         durationSec: durationSec ?? null,
         tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+        language: language || null,
         order: nextOrder,
         published: true,
         createdAt: serverTimestamp(),
@@ -266,6 +269,37 @@ function UploadPanel({ nextOrder }: { nextOrder: number }) {
               className="bg-transparent text-ink outline-none">
               <option value="lullaby">Type — Lullaby</option>
               <option value="noise">Type — Noise</option>
+            </select>
+          </div>
+        </FieldRow>
+        <FieldRow>
+          {/* The app shows vocal songs to users in this language; "instrumental"
+              is shown to everyone. Codes match the app's 20 languages. */}
+          <div className="flex w-full items-center gap-3">
+            <span className="text-mushroom">Language —</span>
+            <select value={language} onChange={(e) => setLanguage(e.target.value)}
+              className="min-w-0 flex-1 bg-transparent text-ink outline-none">
+              <option value="instrumental">Instrumental (all languages)</option>
+              <option value="en">English (en)</option>
+              <option value="es">Spanish (es)</option>
+              <option value="fr">French (fr)</option>
+              <option value="de">German (de)</option>
+              <option value="it">Italian (it)</option>
+              <option value="pt">Portuguese (pt)</option>
+              <option value="nl">Dutch (nl)</option>
+              <option value="pl">Polish (pl)</option>
+              <option value="ru">Russian (ru)</option>
+              <option value="uk">Ukrainian (uk)</option>
+              <option value="cs">Czech (cs)</option>
+              <option value="da">Danish (da)</option>
+              <option value="no">Norwegian (no)</option>
+              <option value="sv">Swedish (sv)</option>
+              <option value="fi">Finnish (fi)</option>
+              <option value="hu">Hungarian (hu)</option>
+              <option value="ro">Romanian (ro)</option>
+              <option value="el">Greek (el)</option>
+              <option value="sl">Slovenian (sl)</option>
+              <option value="tr">Turkish (tr)</option>
             </select>
           </div>
         </FieldRow>
