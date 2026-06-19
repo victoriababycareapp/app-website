@@ -226,6 +226,7 @@ export default function Home() {
           <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             <a href="/support" className="transition-colors hover:text-secondary">Support</a>
             <a href="/privacy" className="transition-colors hover:text-secondary">Privacy</a>
+            <a href="/terms" className="transition-colors hover:text-secondary">Terms</a>
             <a href="/privacy-choices" className="transition-colors hover:text-secondary">Privacy choices</a>
           </nav>
         </div>

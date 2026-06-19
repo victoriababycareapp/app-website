@@ -52,6 +52,7 @@ export default function LegalShell({
             <Link href="/" className="transition-colors hover:text-secondary">Home</Link>
             <Link href="/support" className="transition-colors hover:text-secondary">Support</Link>
             <Link href="/privacy" className="transition-colors hover:text-secondary">Privacy</Link>
+            <Link href="/terms" className="transition-colors hover:text-secondary">Terms</Link>
             <Link href="/privacy-choices" className="transition-colors hover:text-secondary">Privacy choices</Link>
           </nav>
         </div>
