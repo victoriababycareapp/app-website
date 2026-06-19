@@ -57,3 +57,28 @@ h3 {
 @media (prefers-reduced-motion: reduce) {
   .luna-rock { animation: none; }
 }
+
+/* ── Prose for the Support / Privacy / Privacy-choices pages ───────────────── */
+.legal h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  margin-top: 2.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-ink);
+}
+.legal h3 {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-top: 1.6rem;
+  margin-bottom: 0.25rem;
+  color: var(--color-ink);
+}
+.legal p { margin-top: 0.75rem; color: var(--color-secondary); line-height: 1.7; }
+.legal ul { margin-top: 0.75rem; padding-left: 1.25rem; list-style: disc; color: var(--color-secondary); }
+.legal ol { margin-top: 0.75rem; padding-left: 1.25rem; list-style: decimal; color: var(--color-secondary); }
+.legal li { margin-top: 0.4rem; line-height: 1.65; }
+.legal a { color: var(--color-clay); text-decoration: underline; text-underline-offset: 2px; }
+.legal a:hover { color: var(--color-clay-deep); }
+.legal strong { color: var(--color-ink); font-weight: 600; }
+.legal h2:first-child { margin-top: 0; }

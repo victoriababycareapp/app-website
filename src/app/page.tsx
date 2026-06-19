@@ -210,7 +210,11 @@ export default function Home() {
       <footer className="border-t border-cardborder py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-sm text-muted md:flex-row">
           <span className="font-serif text-base text-secondary">Victoria Baby Care</span>
-          <span>Made with love for tired, wonderful parents.</span>
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <a href="/support" className="transition-colors hover:text-secondary">Support</a>
+            <a href="/privacy" className="transition-colors hover:text-secondary">Privacy</a>
+            <a href="/privacy-choices" className="transition-colors hover:text-secondary">Privacy choices</a>
+          </nav>
         </div>
         <div className="mx-auto mt-6 max-w-6xl px-5 text-center text-xs text-muted">
           Designed &amp; built by{" "}
