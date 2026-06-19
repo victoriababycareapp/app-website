@@ -216,7 +216,7 @@ export default function Home() {
             <a href="/privacy-choices" className="transition-colors hover:text-secondary">Privacy choices</a>
           </nav>
         </div>
-        <div className="mx-auto mt-6 max-w-6xl px-5 text-center text-xs text-muted">
+        <div className="mx-auto mt-6 max-w-6xl px-5 text-center md:text-left text-xs text-muted">
           Designed &amp; built by{" "}
           <a
             href="https://siteappdigital.com/"
