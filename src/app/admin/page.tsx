@@ -98,6 +98,7 @@ function Studio({ user }: { user: User }) {
   const [items, setItems] = useState<Lullaby[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [nowPlaying, setNowPlaying] = useState<Lullaby | null>(null);
+  const [view, setView] = useState<"upload" | "lullabies" | "live">("upload");
 
   useEffect(() => {
     const q = query(collection(db, LULLABIES_COLLECTION), orderBy("order", "asc"));
@@ -123,9 +124,9 @@ function Studio({ user }: { user: User }) {
             <Moon size={32} />
             <span className="font-serif text-xl font-semibold">Studio</span>
           </div>
-          <SideItem active icon="upload">Upload</SideItem>
-          <SideItem icon="music">Lullabies</SideItem>
-          <SideItem icon="grid">Live in app</SideItem>
+          <SideItem active={view === "upload"} icon="upload" onClick={() => setView("upload")}>Upload</SideItem>
+          <SideItem active={view === "lullabies"} icon="music" onClick={() => setView("lullabies")}>Lullabies</SideItem>
+          <SideItem active={view === "live"} icon="grid" onClick={() => setView("live")}>Live in app</SideItem>
           <button
             onClick={() => signOut(auth)}
             className="mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-secondary transition-colors hover:bg-plaster"
@@ -135,18 +136,36 @@ function Studio({ user }: { user: User }) {
           <p className="mt-auto px-2 text-xs text-muted">{user.email}</p>
         </aside>
 
-        {/* Upload */}
-        <main className="min-w-0 flex-1">
-          <UploadPanel nextOrder={nextOrder} />
-          {loadError && (
-            <p className="mt-4 rounded-xl border border-amber/40 bg-amber/10 p-3 text-sm text-secondary">
-              Couldn’t load the catalog: {loadError}
-            </p>
-          )}
-        </main>
-
-        {/* Live in the app */}
-        <LivePanel items={items} nowPlaying={nowPlaying} setNowPlaying={setNowPlaying} />
+        {view === "upload" ? (
+          <>
+            {/* Upload form + the live list alongside */}
+            <main className="min-w-0 flex-1">
+              <UploadPanel nextOrder={nextOrder} />
+              {loadError && (
+                <p className="mt-4 rounded-xl border border-amber/40 bg-amber/10 p-3 text-sm text-secondary">
+                  Couldn’t load the catalog: {loadError}
+                </p>
+              )}
+            </main>
+            <LivePanel variant="aside" items={items} nowPlaying={nowPlaying} setNowPlaying={setNowPlaying} />
+          </>
+        ) : (
+          // "Lullabies" = all songs (incl. hidden); "Live in app" = published only.
+          <main className="min-w-0 flex-1">
+            <LivePanel
+              variant="main"
+              title={view === "lullabies" ? "Lullabies" : "Live in the app"}
+              items={view === "live" ? items.filter((i) => i.published) : items}
+              nowPlaying={nowPlaying}
+              setNowPlaying={setNowPlaying}
+            />
+            {loadError && (
+              <p className="mt-4 rounded-xl border border-amber/40 bg-amber/10 p-3 text-sm text-secondary">
+                Couldn’t load the catalog: {loadError}
+              </p>
+            )}
+          </main>
+        )}
       </div>
     </div>
   );
@@ -341,11 +360,13 @@ function UploadPanel({ nextOrder }: { nextOrder: number }) {
 
 /* ── Live-in-app panel + mini player ────────────────────────────────────────*/
 function LivePanel({
-  items, nowPlaying, setNowPlaying,
+  items, nowPlaying, setNowPlaying, variant = "aside", title = "Live in the app",
 }: {
   items: Lullaby[];
   nowPlaying: Lullaby | null;
   setNowPlaying: (l: Lullaby | null) => void;
+  variant?: "aside" | "main";
+  title?: string;
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
@@ -369,8 +390,10 @@ function LivePanel({
   }
 
   return (
-    <aside className="hidden w-80 shrink-0 flex-col lg:flex">
-      <h2 className="mb-4 text-xl">Live in the app</h2>
+    <aside className={variant === "main"
+        ? "flex min-w-0 flex-1 flex-col"
+        : "hidden w-80 shrink-0 flex-col lg:flex"}>
+      <h2 className="mb-4 text-xl">{title}</h2>
       <div className="flex-1 space-y-3 overflow-y-auto">
         {items.length === 0 && (
           <p className="rounded-2xl border border-cardborder bg-cream p-4 text-sm text-secondary">
@@ -443,15 +466,17 @@ function FieldRow({ children }: { children: React.ReactNode }) {
 }
 
 function SideItem({
-  children, active, icon,
-}: { children: React.ReactNode; active?: boolean; icon: "upload" | "music" | "grid" }) {
+  children, active, icon, onClick,
+}: { children: React.ReactNode; active?: boolean; icon: "upload" | "music" | "grid"; onClick?: () => void }) {
   const glyph = icon === "upload" ? "＋" : icon === "music" ? "♪" : "▦";
   return (
-    <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${
-      active ? "bg-clay font-semibold text-cream" : "text-secondary"
-    }`}>
+    <button
+      onClick={onClick}
+      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors ${
+        active ? "bg-clay font-semibold text-cream" : "text-secondary hover:bg-plaster"
+      }`}>
       <span className="text-lg">{glyph}</span> {children}
-    </div>
+    </button>
   );
 }
 
