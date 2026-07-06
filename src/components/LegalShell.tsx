@@ -50,6 +50,7 @@ export default function LegalShell({
           <span className="font-serif text-base text-secondary">Victoria Baby Care</span>
           <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             <Link href="/" className="transition-colors hover:text-secondary">Home</Link>
+            <Link href="/blog" className="transition-colors hover:text-secondary">Blog</Link>
             <Link href="/support" className="transition-colors hover:text-secondary">Support</Link>
             <Link href="/privacy" className="transition-colors hover:text-secondary">Privacy</Link>
             <Link href="/terms" className="transition-colors hover:text-secondary">Terms</Link>
